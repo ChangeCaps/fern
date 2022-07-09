@@ -1,0 +1,10 @@
+fn main() {
+	let x = bar();
+	let y: &i32 = &x;
+	let z = *y;
+}
+
+fn bar() -> i32 {
+	let y = 2;
+	return y;
+}
