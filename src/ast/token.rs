@@ -428,6 +428,12 @@ keywords! {
     "bool" => Bool,
     "true" => True,
     "false" => False,
+    "i8" => I8,
+    "u8" => U8,
+    "i16" => I16,
+    "u16" => U16,
     "i32" => I32,
     "u32" => U32,
+    "i64" => I64,
+    "u64" => U64,
 }

@@ -2,8 +2,14 @@ use crate::ast;
 
 #[derive(Clone, Debug)]
 pub enum IntegerType {
+    I8(ast::I8),
+    U8(ast::U8),
+    I16(ast::I16),
+    U16(ast::U16),
     I32(ast::I32),
     U32(ast::U32),
+    I64(ast::I64),
+    U64(ast::U64),
 }
 
 #[derive(Clone, Debug)]
