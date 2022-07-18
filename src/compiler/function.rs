@@ -475,10 +475,10 @@ impl<'a> FunctionCompiler<'a> {
         }
 
         if !returned && return_type != Type::Void {
-            return Err(Error::new("Function must return"));
+            Err(Error::new("Function must return"))
+        } else {
+            Ok(())
         }
-
-        Ok(())
     }
 
     pub fn compile_program(
