@@ -63,8 +63,14 @@ impl Declarations {
             ast::Type::Void(_) => Ok(Type::Void),
             ast::Type::Boolean(_) => Ok(Type::Memory(MemoryType::Bool)),
             ast::Type::Integer(integer) => match integer {
+                ast::IntegerType::I8(_) => Ok(Type::Memory(MemoryType::I8)),
+                ast::IntegerType::U8(_) => Ok(Type::Memory(MemoryType::U8)),
+                ast::IntegerType::I16(_) => Ok(Type::Memory(MemoryType::I16)),
+                ast::IntegerType::U16(_) => Ok(Type::Memory(MemoryType::U16)),
                 ast::IntegerType::I32(_) => Ok(Type::Memory(MemoryType::I32)),
                 ast::IntegerType::U32(_) => Ok(Type::Memory(MemoryType::U32)),
+                ast::IntegerType::I64(_) => Ok(Type::Memory(MemoryType::I64)),
+                ast::IntegerType::U64(_) => Ok(Type::Memory(MemoryType::U64)),
             },
             ast::Type::Path(_) => todo!(),
             ast::Type::Reference(inner) => {

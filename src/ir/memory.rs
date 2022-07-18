@@ -1,3 +1,5 @@
+use std::fmt::{Debug, Display};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub enum MemoryType {
     U8,
