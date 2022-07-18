@@ -1,6 +1,6 @@
 fn main() {
 	let x = bar();
-	let y: &i32 = &x;
+	let y = &x;
 	let z = *y;
 }
 
