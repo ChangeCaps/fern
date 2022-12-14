@@ -9,12 +9,6 @@ use crate::{
 
 use super::{Type, Types};
 
-#[derive(Clone, Debug)]
-pub struct FunctionDeclaration {
-    pub ast: ast::FunctionDeclaration,
-    pub module: ModuleId,
-}
-
 #[derive(Clone, Debug, Default)]
 pub struct Module {
     pub super_module: Option<ModuleId>,
@@ -28,7 +22,7 @@ pub struct Declarations {
     pub function_ids: FunctionIds,
     pub base_module: ModuleId,
     pub modules: HashMap<ModuleId, Module>,
-    pub functions: HashMap<FunctionId, FunctionDeclaration>,
+    pub functions: HashMap<FunctionId, ast::FunctionDeclaration>,
 }
 
 impl Declarations {
@@ -98,13 +92,7 @@ impl Declarations {
                 let function_id = self.function_ids.generate();
 
                 module.functions.insert(function.ident.clone(), function_id);
-                self.functions.insert(
-                    function_id,
-                    FunctionDeclaration {
-                        ast: function,
-                        module: module_id,
-                    },
-                );
+                self.functions.insert(function_id, function);
             }
         }
 

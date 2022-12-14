@@ -1,16 +1,11 @@
-use std::collections::HashMap;
+use crate::compiler::{FunctionSignatures, Types};
 
-use crate::{
-    compiler::{FunctionSignatures, Types},
-    id::FunctionId,
-};
-
-use super::{Blocks, Function};
+use super::{Blocks, Functions};
 
 #[derive(Clone, Debug, Default)]
 pub struct Program {
     pub types: Types,
     pub signatures: FunctionSignatures,
     pub blocks: Blocks,
-    pub functions: HashMap<FunctionId, Function>,
+    pub functions: Functions,
 }

@@ -64,13 +64,13 @@ impl FunctionArgument {
 }
 
 #[derive(Clone, Debug)]
-pub struct Function {
+pub struct FunctionDeclaration {
     pub arguments: Vec<FunctionArgument>,
     pub return_type: TypeId,
     pub signature: FunctionSignatureId,
 }
 
-impl Function {
+impl FunctionDeclaration {
     pub fn from_ast(
         declarations: &Declarations,
         types: &mut Types,
@@ -103,12 +103,12 @@ impl Function {
 }
 
 #[derive(Clone, Debug, Default)]
-pub struct Functions {
+pub struct FunctionDeclarations {
     pub ids: FunctionIds,
-    pub functions: HashMap<FunctionId, Function>,
+    pub functions: HashMap<FunctionId, FunctionDeclaration>,
 }
 
-impl Functions {
+impl FunctionDeclarations {
     pub fn new(
         declarations: &Declarations,
         types: &mut Types,
@@ -117,13 +117,13 @@ impl Functions {
         let mut this = Self::default();
 
         for (&id, function) in declarations.functions.iter() {
-            this.insert_function(declarations, types, signatures, id, &function.ast)?;
+            this.insert(declarations, types, signatures, id, function)?;
         }
 
         Ok(this)
     }
 
-    pub fn insert_function(
+    pub fn insert(
         &mut self,
         path_stage: &Declarations,
         types: &mut Types,
@@ -131,7 +131,7 @@ impl Functions {
         id: FunctionId,
         function: &ast::FunctionDeclaration,
     ) -> Result<(), Error> {
-        let function = Function::from_ast(path_stage, types, signatures, function)?;
+        let function = FunctionDeclaration::from_ast(path_stage, types, signatures, function)?;
         self.functions.insert(id, function);
 
         Ok(())

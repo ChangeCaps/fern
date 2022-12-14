@@ -1,15 +1,10 @@
 [package]
-name = "fern"
+name = "fern-cranelift"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[workspace]
-members = ["fern-cli", "fern-cranelift"]
-
 [dependencies]
-
-[features]
-default = ["parse"]
-parse = []
+cranelift = "0.85"
+fern = { version = "0.1.0", path = ".." }

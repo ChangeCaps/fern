@@ -17,5 +17,7 @@ fn main() {
 
     let program = parser.parse::<ast::Program>().unwrap();
 
-    compile_program(program).unwrap();
+    let ir = compile_program(program).unwrap();
+
+    println!("{:#?}", ir);
 }

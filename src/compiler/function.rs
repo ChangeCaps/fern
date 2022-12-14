@@ -4,12 +4,12 @@ use crate::{
     error::Error,
     id::{BlockId, FunctionId, ModuleId},
     ir::{
-        Blocks, Immediate, InstructionBuilder, MemoryType, Register, RegisterAllocator, Stack,
-        StackAllocation, StackSlot,
+        Blocks, Function, Functions, Immediate, InstructionBuilder, MemoryType, Register,
+        RegisterAllocator, Stack, StackAllocation, StackSlot,
     },
 };
 
-use super::{Declarations, FunctionSignatures, Functions, Types, Value, ValueKind};
+use super::{Declarations, FunctionDeclarations, FunctionSignatures, Types, Value, ValueKind};
 
 pub enum ControlFlow {
     None,
@@ -41,7 +41,8 @@ pub struct FunctionContext<'a> {
     pub module: ModuleId,
     pub stack: Stack,
     pub registers: RegisterAllocator,
-    pub block: BlockId,
+    pub current_block: BlockId,
+    pub used_blocks: Vec<BlockId>,
     pub variables: Vec<FunctionVariable>,
     pub return_type: Type,
 }
@@ -50,12 +51,16 @@ impl<'a> FunctionContext<'a> {
     pub fn ins(&mut self) -> InstructionBuilder<'_> {
         InstructionBuilder {
             register_allocator: &mut self.registers,
-            block: self.blocks.get_mut(self.block).unwrap(),
+            block: self.blocks.get_mut(self.current_block).unwrap(),
         }
     }
 
+    pub fn new_block(&mut self) -> BlockId {
+        self.blocks.create()
+    }
+
     pub fn set_block(&mut self, block: BlockId) {
-        self.block = block;
+        self.current_block = block;
     }
 
     pub fn free(&mut self, value: Value) {
@@ -70,11 +75,11 @@ impl<'a> FunctionContext<'a> {
 
 pub struct FunctionCompiler<'a> {
     pub declarations: &'a Declarations,
-    pub functions: &'a Functions,
+    pub functions: &'a FunctionDeclarations,
 }
 
 impl<'a> FunctionCompiler<'a> {
-    pub fn new(declarations: &'a Declarations, functions: &'a Functions) -> Self {
+    pub fn new(declarations: &'a Declarations, functions: &'a FunctionDeclarations) -> Self {
         Self {
             declarations,
             functions,
@@ -440,10 +445,11 @@ impl<'a> FunctionCompiler<'a> {
         types: &mut Types,
         signatures: &mut FunctionSignatures,
         id: FunctionId,
-    ) -> Result<(), Error> {
-        let declaration = &self.declarations.functions[&id];
-        let function = &self.functions.functions[&id];
-        let return_type = types.get_type(function.return_type);
+        module: ModuleId,
+    ) -> Result<Function, Error> {
+        let ast = &self.declarations.functions[&id];
+        let declaration = &self.functions.functions[&id];
+        let return_type = types.get_type(declaration.return_type);
 
         let entry_point = blocks.create();
 
@@ -451,17 +457,18 @@ impl<'a> FunctionCompiler<'a> {
             types,
             signatures,
             blocks,
-            module: declaration.module,
+            module,
             registers: RegisterAllocator::new(),
             stack: Stack::new(),
-            block: entry_point,
+            current_block: entry_point,
+            used_blocks: vec![entry_point],
             variables: Vec::new(),
             return_type,
         };
 
         let mut returned = false;
 
-        for statement in declaration.ast.block.iter() {
+        for statement in ast.block.iter() {
             let control_flow = self.compile_statement(&mut ctx, statement)?;
 
             match control_flow {
@@ -477,7 +484,19 @@ impl<'a> FunctionCompiler<'a> {
         if !returned && return_type != Type::Void {
             Err(Error::new("Function must return"))
         } else {
-            Ok(())
+            if !returned {
+                let register = ctx.registers.allocate();
+                ctx.ins().ret(register);
+            }
+
+            let function = Function {
+                label: None,
+                signature: declaration.signature,
+                blocks: Vec::new(),
+                stack: ctx.stack,
+            };
+
+            Ok(function)
         }
     }
 
@@ -486,11 +505,18 @@ impl<'a> FunctionCompiler<'a> {
         blocks: &mut Blocks,
         types: &mut Types,
         signatures: &mut FunctionSignatures,
-    ) -> Result<(), Error> {
-        for id in self.declarations.functions.keys().copied() {
-            self.compile_function(blocks, types, signatures, id)?;
+    ) -> Result<Functions, Error> {
+        let mut functions = Functions::default();
+
+        for (&module_id, module) in self.declarations.modules.iter() {
+            for function_id in module.functions.values().copied() {
+                let function =
+                    self.compile_function(blocks, types, signatures, function_id, module_id)?;
+
+                functions.insert(function_id, function);
+            }
         }
 
-        Ok(())
+        Ok(functions)
     }
 }
